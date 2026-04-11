@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "workflow-x64": {
+      "command": "C:/CPC/servers/workflow.exe",
+      "args": [],
+      "_comment": "x64 Windows — default path for CPC installations"
+    },
+    "workflow-arm64": {
+      "command": "C:/CPC/servers/workflow.exe",
+      "args": [],
+      "_comment": "ARM64 Windows — same binary name, built for ARM64 target"
+    }
+  }
+}
