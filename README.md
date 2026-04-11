@@ -47,8 +47,8 @@ Day N: Direct HTTP replay (workflow:api_call)
 
 Grab the binary for your platform:
 
-- **x64 Windows**: [workflow-x64-windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow-x64-windows.exe)
-- **ARM64 Windows**: [workflow-arm64-windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow-arm64-windows.exe)
+- **x64 Windows**: [workflow_x64_windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow_x64_windows.exe)
+- **ARM64 Windows**: [workflow_arm64_windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow_arm64_windows.exe)
 
 Rename to `workflow.exe` and place wherever you keep your MCP server binaries.
 
