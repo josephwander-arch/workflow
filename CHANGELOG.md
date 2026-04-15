@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Add legacy-fallback path resolution. Existing `C:\CPC\workflows\` (if present with known data files) continues to be used; new installs use `cpc_paths::data_path("workflow")` default.
+
 ## [1.3.0] - 2026-04-15 — Cross-Platform OS Keyring + DPAPI Migration Tool
 
 ### Added

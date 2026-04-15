@@ -27,6 +27,9 @@ data-encoding = "2"
 keyring = { version = "3", features = ["windows-native"] }
 cpc-paths = { git = "https://github.com/josephwander-arch/cpc-paths", tag = "v0.1.0" }
 
+[dev-dependencies]
+tempfile = "3"
+
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = [
     "Win32_Security_Credentials",
