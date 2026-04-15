@@ -1,14 +1,13 @@
 {
   "mcpServers": {
-    "workflow-x64": {
-      "command": "C:/CPC/servers/workflow.exe",
+    "workflow": {
+      "_comment_arch": "Choose the command path for your platform. x64 is the default.",
+      "_comment_x64": "x64 Windows (Intel/AMD):",
+      "command": "C:\\CPC\\servers\\workflow.exe",
+      "_comment_arm64": "ARM64 Windows (Snapdragon/Qualcomm) — replace command above with:",
+      "_command_arm64": "C:\\CPC\\servers\\workflow-arm64.exe",
       "args": [],
-      "_comment": "x64 Windows — default path for CPC installations"
-    },
-    "workflow-arm64": {
-      "command": "C:/CPC/servers/workflow.exe",
-      "args": [],
-      "_comment": "ARM64 Windows — same binary name, built for ARM64 target"
+      "env": {}
     }
   }
 }
