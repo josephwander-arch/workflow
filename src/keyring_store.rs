@@ -70,7 +70,7 @@ pub fn probe() -> Result<()> {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_nanos();
-    // Unique per-invocation target prevents parallel test collisions (cargo test runs in parallel)
+    // Unique per-invocation target prevents parallel test collisions
     let probe_user = format!("probe_{}", nanos);
     let sentinel = format!("sentinel_{}", nanos);
 
