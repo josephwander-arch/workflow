@@ -1,7 +1,7 @@
 //! Workflow MCP Server — Orchestration for API discovery, flow recording/replay,
 //! credential vault, scheduled watches, workflow chains.
 //! 32 tools across 8 modules. Stdio JSON-RPC transport.
-//! v1.3.0: Cross-platform OS keyring for credential/TOTP storage.
+//! v1.3.1: Two-entry sentinel probe replaces single-entry probe.
 
 use std::io::{BufRead, Write};
 use serde::{Deserialize, Serialize};
@@ -600,7 +600,7 @@ fn handle_request(request: &JsonRpcRequest, store: &JsonStore) -> Option<JsonRpc
                 "capabilities": { "tools": {} },
                 "serverInfo": {
                     "name": "workflow",
-                    "version": "1.3.0",
+                    "version": "1.3.1",
                     "description": "Workflow orchestration: API storage/replay, OS-keyring credential vault, flow recording, watches, chains"
                 }
             })),

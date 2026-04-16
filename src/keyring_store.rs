@@ -5,6 +5,7 @@
 use anyhow::{Context, Result};
 use keyring::Entry;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const SERVICE: &str = "cpc-workflow";
 
@@ -58,15 +59,52 @@ pub fn delete(namespace: &str, name: &str) -> Result<()> {
 /// Platform capability probe. Call on server startup to fail fast if keyring is unavailable
 /// (e.g., headless Linux with no Secret Service daemon).
 /// On Windows and macOS this always succeeds.
+///
+/// Uses a two-Entry sentinel: writes via one Entry instance, drops it, then reads via a fresh
+/// Entry with the same service+user. Mock backends keep in-process state, so a single-Entry
+/// round-trip can pass while mock is active. Creating a second instance exposes mock behavior
+/// because real OS backends (Windows Credential Manager, macOS Keychain, Linux Secret Service)
+/// persist across Entry instances while mock backends may not.
 pub fn probe() -> Result<()> {
-    let test_entry = Entry::new(SERVICE, "__probe__")
-        .context("creating probe entry")?;
-    test_entry.set_password("probe")
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    // Unique per-invocation target prevents parallel test collisions (cargo test runs in parallel)
+    let probe_user = format!("probe_{}", nanos);
+    let sentinel = format!("sentinel_{}", nanos);
+
+    // Write via first Entry instance
+    let writer = Entry::new("cpc_workflow_probe", &probe_user)
+        .context("probe: creating writer entry")?;
+    writer.set_password(&sentinel)
         .context("probe: set failed")?;
-    let read = test_entry.get_password()
+    drop(writer);
+
+    // Read via a fresh Entry instance — catches mock backends
+    let reader = Entry::new("cpc_workflow_probe", &probe_user)
+        .context("probe: creating reader entry")?;
+    let read = reader.get_password()
         .context("probe: get failed")?;
-    anyhow::ensure!(read == "probe", "keyring round-trip mismatch");
-    test_entry.delete_credential()
-        .context("probe: delete failed")?;
+
+    // Cleanup — ignore errors
+    let _ = reader.delete_credential();
+
+    anyhow::ensure!(
+        read == sentinel,
+        "keyring two-entry sentinel mismatch: backend does not persist across Entry instances (mock backend?)"
+    );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Verifies that the OS keyring backend persists data across Entry instances.
+    /// Passes on Windows (Credential Manager), macOS (Keychain), and Linux with Secret Service.
+    #[test]
+    fn test_keyring_probe_succeeds() {
+        probe().expect("keyring probe should succeed on a machine with a real OS keyring backend");
+    }
 }

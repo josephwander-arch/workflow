@@ -1,9 +1,18 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.1] - 2026-04-15 — Two-Entry Sentinel Probe
 
 ### Changed
-- Add legacy-fallback path resolution. Existing `C:\CPC\workflows\` (if present with known data files) continues to be used; new installs use `cpc_paths::data_path("workflow")` default.
+- **`keyring_store::probe()`** — replaced single-Entry round-trip with a two-Entry sentinel. Writes a timestamped value via one `Entry` instance, drops it, then reads via a fresh `Entry` with the same service+user. Detects mock backends that pass single-Entry round-trips but don't persist across instances. The old comment-only defense in CHANGELOG (noting `features = ["windows-native"]` requirement) is superseded by this runtime check.
+- **`docs/per_machine_setup.md`** — added Two-Tier Storage section documenting the metadata/secrets split, startup probe behavior, and per-machine migration steps.
+- License: `MIT` → `Apache-2.0` (backport to match other CPC repos).
+- Version bumped to `1.3.1`.
+
+### Also includes (Stage C2, previously unreleased)
+- **`storage.rs`** — legacy-fallback path resolution: existing `C:\CPC\workflows\` continues to be used; new installs resolve via `cpc_paths::data_path("workflow")`.
+
+### Tests
+- Added `test_keyring_probe_succeeds` — calls `probe()` on the live backend, verifies two-Entry persistence round-trip passes.
 
 ## [1.3.0] - 2026-04-15 — Cross-Platform OS Keyring + DPAPI Migration Tool
 

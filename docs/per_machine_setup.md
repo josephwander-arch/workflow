@@ -14,14 +14,29 @@ This guide covers everything you need to do on each machine where you want to ru
 | OS keyring credentials | Yes | Run `workflow:credential_store` per credential after first install on each machine. Credentials are encrypted per-machine with Windows DPAPI and do not sync automatically. (Forthcoming: keyring migration planned for v1.3.0.) |
 | Volumes / knowledge base | No (Drive-synced) | If Volumes is on Google Drive, just verify Drive is syncing on each machine. No copy needed. |
 
+## Two-Tier Storage
+
+Workflow uses a two-tier storage model: metadata in JSON files, secrets in the OS keyring.
+
+| Tier | What's stored | Location | Synced? |
+|------|--------------|----------|---------|
+| Metadata | Credential names, types, API patterns, TOTP entry names | `C:\CPC\workflows\*.json` | No (per-machine) |
+| Secrets | Credential values, TOTP secrets | OS keyring (Windows Credential Manager / macOS Keychain / Linux Secret Service) | No (per-machine, by OS design) |
+
+**Why two tiers?** The OS keyring encrypts secrets at the OS level, tied to the current user account. This means secret values never appear in plaintext files, and rotation is atomic (update keyring, all subsequent reads get the new value immediately).
+
+**Startup probe:** On every start, the server runs a two-Entry sentinel probe: writes a timestamped value via one `Entry` instance, drops it, then reads via a fresh `Entry` with the same service+user. If the values don't match, the keyring backend is not persisting across instances (mock backend), and the server refuses to start. This catches misconfigured builds where `features = ["windows-native"]` is missing from the keyring dependency.
+
+**Per-machine consequence:** Secrets do not transfer between machines. After installing on a new machine, re-run `workflow:credential_store` for each credential and `workflow:totp_register` / `workflow:totp_register_from_uri` for each TOTP entry.
+
 ## Workflow-Specific Notes
 
-- **Windows DPAPI encryption:** Credentials are encrypted using Windows DPAPI, which ties them to the current user account on the current machine. This means credentials **do not transfer between machines** — you must run `workflow:credential_store` on each machine after install. This is by design (no credential sync risk).
-- **Credential re-entry on new machines:** When setting up a second machine, re-run `workflow:credential_store` for each credential you need. The credential names and API patterns can be the same — only the encrypted values are machine-local.
+- **OS keyring encryption:** Credentials are encrypted by the OS keyring (Windows Credential Manager on Windows), tied to the current user account. Credentials **do not transfer between machines** — re-enter on each machine after install. This is by design (no credential sync risk).
+- **Credential re-entry on new machines:** When setting up a second machine, re-run `workflow:credential_store` for each credential. The credential names and API patterns can be the same — only the encrypted values are machine-local.
 - **Flow recording storage:** Recorded flows are stored in `%LOCALAPPDATA%\CPC\workflow\flows\` — per-machine, not synced. If you want the same flows on multiple machines, copy the `flows\` directory manually.
-- **TOTP/HOTP secrets:** TOTP and HOTP secrets are stored in the same DPAPI-encrypted store as credentials. Re-register them on each machine using `workflow:totp_register` or `workflow:totp_register_from_uri`.
-- **Data directory:** All workflow data (API patterns, watch definitions, workflow chains) lives in `C:\CPC\workflows\` as JSON files. Atomic writes (write to `.tmp`, then rename) protect against crash corruption.
-- **v1.3.0 keyring migration (planned):** A future release will migrate from DPAPI to a cross-platform OS keyring. Until then, credential setup is a required manual step on each machine.
+- **TOTP/HOTP secrets:** TOTP and HOTP secrets are stored in the OS keyring alongside credentials. Re-register on each machine using `workflow:totp_register` or `workflow:totp_register_from_uri`.
+- **Data directory:** All workflow metadata (API patterns, watch definitions, workflow chains) lives in `C:\CPC\workflows\` as JSON files. Atomic writes (write to `.tmp`, then rename) protect against crash corruption.
+- **Legacy DPAPI migration (v1.3.0+):** If you upgraded from a pre-v1.3.0 install, run `workflow:migrate_dpapi_to_keyring` once to move DPAPI-encrypted credentials to the OS keyring. Idempotent — safe to run multiple times.
 
 **Test post-install:** `workflow:credential_list` should return an empty list cleanly (no errors, no panics).
 
