@@ -1,5 +1,6 @@
-// TODO: fix clippy lints and remove this blanket allow
+// TODO: fix clippy lints, remove dead code, and remove these blanket allows
 #![allow(clippy::all)]
+#![allow(dead_code)]
 //! Workflow MCP Server — Orchestration for API discovery, flow recording/replay,
 //! credential vault, scheduled watches, workflow chains.
 //! 32 tools across 8 modules. Stdio JSON-RPC transport.
