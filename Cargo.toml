@@ -4,7 +4,7 @@ version = "1.3.4"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/josephwander-arch/workflow"
-description = "CPC workflow MCP server — credentials, TOTP, API pattern replay, flows, watches."
+description = "Workflow MCP server — credentials, TOTP, API pattern replay, flows, watches."
 
 [[bin]]
 name = "workflow"

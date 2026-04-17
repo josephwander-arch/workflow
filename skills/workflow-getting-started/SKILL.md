@@ -1,7 +1,6 @@
 ---
 name: workflow-getting-started
-reference_tier: 1
-description: 'Getting started with CPC Workflow — the 36-tool automation server for API discovery, DPAPI credential vault, flow recording/replay, watches, data piping, and TOTP/2FA. Use when: automating API calls, managing credentials, recording replayable flows, polling for changes, piping data between steps, or generating 2FA codes.'
+description: 'Getting started with Workflow — the 36-tool automation server for API discovery, credential vault, flow recording/replay, watches, data piping, and TOTP/2FA. Use when: automating API calls, managing credentials, recording replayable flows, polling for changes, piping data between steps, or generating 2FA codes.'
 ---
 
 ## What Workflow Is

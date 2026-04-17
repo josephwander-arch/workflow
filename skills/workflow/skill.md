@@ -608,7 +608,7 @@ Remove a workflow definition and all its run history.
 
 ### Frontmatter Lint Query (1 tool)
 
-Read-only access to the CPC frontmatter lint report. This tool queries a
+Read-only access to a frontmatter lint report. This tool queries a
 pre-generated report file — it doesn't run the linter itself.
 
 
@@ -740,9 +740,8 @@ hands:browser_learn_api()
 
 ### Where to find hands
 
-The hands MCP server skill reference is at `C:\CPC\releases\skills\hands.md`.
-Source: `C:\rust-mcp\hands\`. Published at https://github.com/josephwander-arch/hands
-once the repo goes public.
+The hands MCP server is published at https://github.com/josephwander-arch/hands.
+See the hands skill reference for full tool documentation.
 
 ---
 

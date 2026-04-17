@@ -4,6 +4,24 @@ API pattern storage and replay, DPAPI-encrypted credential vault, data transform
 
 **Workflow is the graduation pipeline partner for [hands](https://github.com/josephwander-arch/hands).** Use hands to automate a browser task once, capture the underlying API calls with `hands:browser_learn_api`, store them with `workflow:api_store`, then replay via direct HTTP forever. No browser needed on future runs. 100x faster.
 
+## What's New — v1.3.4
+
+- **v1.3.4** — Fixed 69 UTF-8 mojibake sequences in skill reference files (em-dashes + arrows). Documentation-only patch.
+- **v1.3.3** — Cargo.toml metadata cleanup (license, repository, description fields).
+- **v1.3.1** — Two-Entry sentinel keyring probe on startup. Detects mock backends that don't persist across instances.
+- **v1.3.0** — Cross-platform OS keyring storage (Windows Credential Manager, macOS Keychain, Linux Secret Service). `migrate_dpapi_to_keyring` tool for one-time migration from legacy DPAPI. Linux headless guard.
+
+<details>
+<summary>Older releases</summary>
+
+- **v1.2.5** — TOTP DPAPI fix + monorepo sync. Null-byte stripping after DPAPI decrypt.
+- **v1.2.1** — Meta-tool dispatch fixes, credential round-trip hardening, TOTP module (6 tools).
+- **v1.1.1** — Initial public release. 31 tools across 7 modules.
+
+</details>
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
+
 ## The Graduation Pipeline
 
 ```
@@ -57,10 +75,10 @@ A future `cpc-setup.exe` helper will automate this entire process.
 
 ### Download
 
-Grab the binary for your platform:
+Grab the binary for your platform from the [latest release](https://github.com/josephwander-arch/workflow/releases/latest):
 
-- **x64 Windows**: [workflow_x64_windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow_x64_windows.exe)
-- **ARM64 Windows**: [workflow_arm64_windows.exe](https://github.com/josephwander-arch/workflow/releases/latest/download/workflow_arm64_windows.exe)
+- **x64 Windows**: `workflow_v1.3.4_windows_x64.exe`
+- **ARM64 Windows**: `workflow_v1.3.4_windows_arm64.exe`
 
 Rename to `workflow.exe` and place wherever you keep your MCP server binaries.
 

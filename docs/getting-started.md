@@ -47,9 +47,9 @@ The output binary lands at `target/release/workflow.exe`. It is a single file wi
 
 ### Pre-built binaries
 
-Download the latest Windows binaries from the [v1.2.1 release](https://github.com/josephwander-arch/workflow/releases/tag/v1.2.1):
-- `workflow_v1.2.1_x64.exe` --- Windows x64
-- `workflow_v1.2.1_arm64.exe` --- Windows ARM64
+Download the latest Windows binaries from the [Releases page](https://github.com/josephwander-arch/workflow/releases/latest):
+- `workflow_v1.3.4_windows_x64.exe` --- Windows x64
+- `workflow_v1.3.4_windows_arm64.exe` --- Windows ARM64
 
 ### Configure for Claude Desktop
 
