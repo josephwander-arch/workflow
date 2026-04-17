@@ -3,28 +3,28 @@ name: workflow
 description: |
   API pattern storage and replay, DPAPI-encrypted credential vault, flow
   recording/replay, scheduled watches, data transform pipelines, and
-  triggerâ†’action workflow chains â€” all through one MCP server. Teaches the
-  graduation pipeline (browserâ†’API), credential-by-reference pattern, flow
+  trigger→action workflow chains — all through one MCP server. Teaches the
+  graduation pipeline (browser→API), credential-by-reference pattern, flow
   recording, watch polling, and workflow composition. For workflow v1.1.1+.
 ---
 
-# Workflow MCP Server â€” Skill Reference
+# Workflow MCP Server — Skill Reference
 
 Workflow is a single Rust binary that gives you API pattern storage with live
 HTTP replay, a Windows DPAPI-encrypted credential vault, flow recording and
 adaptive replay, scheduled watch polling, JSON transform pipelines, and
-triggerâ†’action workflow chains â€” all over MCP. 31 tools across 7 modules, zero
+trigger→action workflow chains — all over MCP. 31 tools across 7 modules, zero
 runtime dependencies beyond Rust, one process.
 
 This skill teaches you how to use it effectively, not just what tools exist.
 
 ---
 
-## The Graduation Pipeline â€” workflow's Reason to Exist
+## The Graduation Pipeline — workflow's Reason to Exist
 
 Browser automation is expensive. Every Chrome session costs startup time, memory,
 page load latency, and fragile selectors that break when sites update. But if the
-browser successfully completed a task, the real work happened over HTTP â€” API
+browser successfully completed a task, the real work happened over HTTP — API
 calls were made, tokens were exchanged, data came back as JSON.
 
 **The insight:** capture those API calls, store them as named patterns with URL
@@ -34,11 +34,11 @@ This is the **graduation pipeline**:
 
 ```
 Day 1: Browser automation (hands MCP server)
-        â†“ hands:browser_learn_api extracts endpoint patterns from network traffic
+        ↓ hands:browser_learn_api extracts endpoint patterns from network traffic
 Day 2: Store patterns (workflow:api_store)
-        â†“ Named pattern with URL template, headers, credential reference
+        ↓ Named pattern with URL template, headers, credential reference
 Day N: Direct HTTP replay (workflow:api_call)
-        â†“ No browser. No Chrome. No selectors. Just HTTP.
+        ↓ No browser. No Chrome. No selectors. Just HTTP.
 ```
 
 **The economics:**
@@ -52,9 +52,9 @@ Future runs skip the browser entirely.
 
 ### How the two halves fit together
 
-The **hands** MCP server is the discovery half â€” it drives the browser, records
+The **hands** MCP server is the discovery half — it drives the browser, records
 network traffic, and extracts API patterns via `browser_learn_api`. The
-**workflow** MCP server is the storage and replay half â€” it persists those
+**workflow** MCP server is the storage and replay half — it persists those
 patterns, manages credentials, and replays the calls via direct HTTP.
 
 Together they form a pipeline. Apart they're each useful (workflow can store
@@ -65,7 +65,7 @@ API.
 ### Production proof
 
 This isn't theoretical. Workflow has been used in production for Medicare
-insurance broker work â€” 24 stored API patterns across Humana, Aetna, and
+insurance broker work — 24 stored API patterns across Humana, Aetna, and
 UnitedHealthcare/Optum FHIR endpoints, with real `last_used` timestamps. These
 patterns run daily without a browser window ever opening.
 
@@ -92,14 +92,14 @@ Save a discovered API pattern for later replay.
 | `method` | string | yes | HTTP method: GET, POST, PUT, DELETE, PATCH |
 | `headers` | object | no | Request headers (content-type, custom headers). Auth goes through `credential_ref`. |
 | `body_template` | any | no | Request body template for POST/PUT. Supports same `{placeholder}` substitution as URL. |
-| `response_shape` | string[] | no | Expected response keys â€” documentation only, helps future callers know what to expect |
+| `response_shape` | string[] | no | Expected response keys — documentation only, helps future callers know what to expect |
 | `credential_ref` | string | no | Name of a stored credential to inject into the Authorization header automatically |
 | `notes` | string | no | How this API was discovered, what it does, any caveats |
 
 **Behavior:** If a pattern with the same `name` already exists, it's replaced
 (upsert). Timestamps `created_at` automatically. Returns `total_apis` count.
 
-**Key pattern â€” credential by reference:**
+**Key pattern — credential by reference:**
 ```
 workflow:api_store(
   name: "humana_fhir_patient",
@@ -129,12 +129,12 @@ Execute a stored API pattern via live HTTP.
 **Behavior:**
 1. Looks up the named pattern
 2. Resolves `{placeholders}` in URL and body template using `params`
-3. Resolves credential by ref â€” decrypts via DPAPI, injects into headers based on credential type:
-   - `bearer` â†’ `Authorization: Bearer <value>`
-   - `api_key` â†’ `X-API-Key: <value>`
-   - `basic` â†’ `Authorization: Basic <value>`
-   - `cookie` â†’ `Cookie: <value>`
-   - `custom` â†’ `Authorization: <value>`
+3. Resolves credential by ref — decrypts via DPAPI, injects into headers based on credential type:
+   - `bearer` → `Authorization: Bearer <value>`
+   - `api_key` → `X-API-Key: <value>`
+   - `basic` → `Authorization: Basic <value>`
+   - `cookie` → `Cookie: <value>`
+   - `custom` → `Authorization: <value>`
 4. Executes the HTTP request
 5. Updates `last_used` timestamp on the pattern
 6. Returns: `success`, `status`, `response_time_ms`, `headers`, `body`
@@ -142,7 +142,7 @@ Execute a stored API pattern via live HTTP.
 
 **The fallback hint is important.** If an API call fails (token expired, endpoint
 changed), the response tells you to fall back to the browser. This is the
-graduation pipeline in reverse â€” when the API breaks, go back to the browser,
+graduation pipeline in reverse — when the API breaks, go back to the browser,
 fix it, re-graduate.
 
 #### `api_list`
@@ -196,7 +196,7 @@ same machine. This is the same encryption Windows uses for stored passwords
 and certificates.
 
 On non-Windows platforms, credentials are stored unencrypted (development/testing
-only â€” do not use for production secrets outside Windows).
+only — do not use for production secrets outside Windows).
 
 #### `credential_store`
 
@@ -216,7 +216,7 @@ it's replaced.
 
 **Critical rule:** Always store credentials by reference name, then use
 `credential_ref` in `api_store`. Never hardcode tokens in URL patterns or body
-templates. When tokens expire, you update one credential â€” all patterns that
+templates. When tokens expire, you update one credential — all patterns that
 reference it automatically get the new value.
 
 #### `credential_get`
@@ -233,14 +233,14 @@ passing a token to a hands browser session that needs to authenticate).
 
 #### `credential_list`
 
-List stored credentials â€” names and types only, never values.
+List stored credentials — names and types only, never values.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `service` | string | no | Filter by service name |
 
 Returns: array of `{name, credential_type, service, created_at}` plus `count`.
-This is safe to call freely â€” it never exposes secret values.
+This is safe to call freely — it never exposes secret values.
 
 #### `credential_delete`
 
@@ -272,7 +272,7 @@ Refresh an OAuth token using a stored refresh_token.
 5. Returns: `{refreshed, new_expiry_seconds}` or `{refreshed: false, error, hint}`
 
 **The hint on failure** tells you to re-authenticate via browser. This connects
-back to the graduation pipeline â€” when OAuth refresh fails, you go back to
+back to the graduation pipeline — when OAuth refresh fails, you go back to
 hands, re-authenticate, capture the new tokens, and store them again.
 
 **Pattern for FHIR endpoints:**
@@ -284,20 +284,20 @@ workflow:api_test(name: "humana_fhir_patient", params: {"patient_id": "test"})
 
 ---
 
-### Flow Recording & Replay (8 tools) â€” EXPERIMENTAL
+### Flow Recording & Replay (8 tools) — EXPERIMENTAL
 
 **Status: experimental.** The flow recording interface exists and is functionally
 complete in the source, but has not yet been production-validated. Use for
 prototyping and testing. A follow-up release will harden flow recording based on real-world
 usage.
 
-Flows are replayable sequences of MCP tool calls â€” record what you did, replay
+Flows are replayable sequences of MCP tool calls — record what you did, replay
 it later. Unlike API patterns (which are single HTTP calls), flows are multi-step
 procedures that can span multiple tools across multiple servers.
 
 **Important architectural note:** `flow_replay` does NOT execute tools directly.
 It returns a step-by-step execution plan that the calling session is responsible
-for executing. This is by design â€” the workflow server doesn't have access to
+for executing. This is by design — the workflow server doesn't have access to
 other MCP servers. It's a data store and planner, not an executor.
 
 #### `flow_record_start`
@@ -328,7 +328,7 @@ Add a step to the currently recording flow.
 
 Call this after each significant tool call during recording. The optional
 verification fields (`expected_url`, `expected_text`, `screenshot_path`) enable
-adaptive replay â€” when a step fails during replay, `flow_adapt` can compare
+adaptive replay — when a step fails during replay, `flow_adapt` can compare
 the current state against what was expected.
 
 #### `flow_record_stop`
@@ -368,9 +368,9 @@ Analyze a failed flow step and suggest an adapted version.
 
 **Behavior:** Analyzes the failure against the recorded step and suggests
 adaptations:
-- Element not found + selector-based â†’ suggests switching to `a11y_ref`
-- Element not clickable â†’ suggests adding `force: true`
-- Other failures â†’ suggests re-recording from this step
+- Element not found + selector-based → suggests switching to `a11y_ref`
+- Element not clickable → suggests adding `force: true`
+- Other failures → suggests re-recording from this step
 
 Returns `{analysis, adapted_step, confidence, suggestion}` where confidence
 is `high`, `medium`, or `low`.
@@ -415,7 +415,7 @@ Also removes any associated dispatch record.
 ### Watch / Polling (5 tools)
 
 Define conditions to watch for by polling MCP tools periodically. Watches are
-the "trigger" side of event-driven automation â€” define what to check, how often,
+the "trigger" side of event-driven automation — define what to check, how often,
 and what to do when the condition is met.
 
 Like flows, watches don't execute tools directly. `watch_check` returns check
@@ -479,7 +479,7 @@ Remove a watch and its schedule.
 
 ### Data Transform Pipelines (2 tools)
 
-Transform JSON data between workflow steps. These are pure functions â€” no
+Transform JSON data between workflow steps. These are pure functions — no
 storage, no side effects, no network calls. They take JSON in, apply operations
 in sequence, and return JSON out.
 
@@ -504,7 +504,7 @@ Apply a sequence of transform operations to JSON data.
 | `group_by` | `key: string` | Group array items by a key value into an object of arrays. |
 | `math` | `key: string`, optional `math_op: string` | Aggregate numeric values. Ops: `sum`, `avg`, `min`, `max`, `count`. Default: `sum`. |
 
-**Example â€” extract and summarize API response data:**
+**Example — extract and summarize API response data:**
 ```
 workflow:transform_pipe(
   input: <api_call response body>,
@@ -517,7 +517,7 @@ workflow:transform_pipe(
 )
 ```
 
-Operations chain sequentially â€” the output of each step feeds into the next.
+Operations chain sequentially — the output of each step feeds into the next.
 Math returns `{value, key, op, count}` as an object, making it chainable with
 template/pick/rename for further processing.
 
@@ -540,15 +540,15 @@ it easy to find where a pipeline goes wrong.
 
 ### Workflow Chains (5 tools)
 
-Compose watches, flows, and API calls into triggerâ†’action chains. A workflow
+Compose watches, flows, and API calls into trigger→action chains. A workflow
 defines: what triggers it, what steps to run, and what to do when a step fails.
 
-Like flows and watches, `workflow_run` returns an execution plan â€” it doesn't
+Like flows and watches, `workflow_run` returns an execution plan — it doesn't
 execute tools directly.
 
 #### `workflow_define`
 
-Define a new triggerâ†’action workflow.
+Define a new trigger→action workflow.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -558,14 +558,14 @@ Define a new triggerâ†’action workflow.
 | `description` | string | no | What this workflow does |
 
 **Trigger types:**
-- `watch` â€” fires when a defined watch's condition is met. `ref` = watch name.
-- `schedule` â€” fires on a cron schedule. `ref` = cron expression.
-- `manual` â€” no automatic trigger. Run explicitly via `workflow_run`.
+- `watch` — fires when a defined watch's condition is met. `ref` = watch name.
+- `schedule` — fires on a cron schedule. `ref` = cron expression.
+- `manual` — no automatic trigger. Run explicitly via `workflow_run`.
 
 **Failure handling per step:**
-- `stop` â€” abort the workflow (default)
-- `skip` â€” log the failure and continue to the next step
-- `retry` â€” retry the failed step once before stopping
+- `stop` — abort the workflow (default)
+- `skip` — log the failure and continue to the next step
+- `retry` — retry the failed step once before stopping
 
 #### `workflow_run`
 
@@ -609,7 +609,7 @@ Remove a workflow definition and all its run history.
 ### Frontmatter Lint Query (1 tool)
 
 Read-only access to the CPC frontmatter lint report. This tool queries a
-pre-generated report file â€” it doesn't run the linter itself.
+pre-generated report file — it doesn't run the linter itself.
 
 
 
@@ -620,9 +620,9 @@ pre-generated report file â€” it doesn't run the linter itself.
 | `limit` | integer | for `drift` mode | Number of top-drift files to return. Default: 10. |
 
 **Modes:**
-- `summary` â€” top-level stats: total files, total insights, schema version distribution, format distribution, top 5 drift files
-- `file` â€” stats for a specific file path (supports exact and suffix matching)
-- `drift` â€” top N files ranked by drift score
+- `summary` — top-level stats: total files, total insights, schema version distribution, format distribution, top 5 drift files
+- `file` — stats for a specific file path (supports exact and suffix matching)
+- `drift` — top N files ranked by drift score
 
 ---
 
@@ -635,7 +635,7 @@ pre-generated report file â€” it doesn't run the linter itself.
 hands:browser_launch()
 hands:browser_navigate(url: "https://portal.humana.com")
 # ... interact with the page ...
-hands:browser_learn_api()  â†’ extracts endpoint patterns
+hands:browser_learn_api()  → extracts endpoint patterns
 
 # Step 2: Store the discovered pattern
 workflow:credential_store(name: "humana_token", value: "<captured_token>", credential_type: "bearer", service: "humana")
@@ -723,8 +723,8 @@ Workflow and hands are designed as two halves of the same pipeline.
 
 ```
 hands:browser_learn_api()
-  â†’ outputs: {url_pattern, method, headers, body_template}
-  â†’ feed directly into workflow:api_store()
+  → outputs: {url_pattern, method, headers, body_template}
+  → feed directly into workflow:api_store()
 ```
 
 ### When to use which
@@ -733,8 +733,8 @@ hands:browser_learn_api()
 |----------|-----|
 | First time doing a task | hands (browser) |
 | Task has a known API pattern | workflow (api_call) |
-| API call fails / token expired | hands (browser re-auth) â†’ workflow (credential_store) |
-| Need to interact with native Windows app | hands (UIA tools â€” workflow doesn't do desktop) |
+| API call fails / token expired | hands (browser re-auth) → workflow (credential_store) |
+| Need to interact with native Windows app | hands (UIA tools — workflow doesn't do desktop) |
 | Need to transform API response data | workflow (transform_pipe) |
 | Need to poll for changes | workflow (watch_define) |
 
@@ -761,7 +761,7 @@ If the task is one HTTP request, use `api_store` + `api_call`. Flows are for
 multi-step procedures that span multiple tools.
 
 **Don't expect flow_replay to execute tools.**
-It returns a plan. Your session executes the plan. This is by design â€” workflow
+It returns a plan. Your session executes the plan. This is by design — workflow
 doesn't have access to other MCP servers.
 
 **Don't rely on flows for production-critical tasks (yet).**
@@ -781,12 +781,12 @@ buttons, filling forms, or reading screen content, use hands.
 ## Data Storage
 
 All workflow data lives in `C:\CPC\workflows\` as JSON files:
-- `apis.json` â€” stored API patterns
-- `credentials.json` â€” encrypted credentials (values are DPAPI-encrypted, base64-encoded)
-- `flows.json` â€” recorded flows
-- `dispatches.json` â€” flow dispatch schedules
-- `watches.json` â€” watch definitions
-- `workflows.json` â€” workflow chain definitions
+- `apis.json` — stored API patterns
+- `credentials.json` — encrypted credentials (values are DPAPI-encrypted, base64-encoded)
+- `flows.json` — recorded flows
+- `dispatches.json` — flow dispatch schedules
+- `watches.json` — watch definitions
+- `workflows.json` — workflow chain definitions
 
 Writes are atomic (write to `.tmp`, then rename). Safe against crashes
 mid-write.
@@ -803,7 +803,7 @@ per-machine. Re-store the credential as the current user.
 **"API call returns fallback_hint"**
 The API request failed (4xx/5xx or network error). Check: is the token expired?
 (`credential_refresh`). Is the endpoint still valid? (`api_test`). If both look
-fine, the API may have changed â€” go back to hands and re-discover.
+fine, the API may have changed — go back to hands and re-discover.
 
 **"Flow is still recording"**
 You called `flow_record_start` but never called `flow_record_stop`. Either stop
@@ -821,14 +821,14 @@ input is actual JSON, not a stringified JSON string.
 
 **Empty api_list / credential_list**
 The store files may not exist yet (`C:\CPC\workflows\`). The first `api_store`
-or `credential_store` call creates them. Or the directory doesn't exist â€” workflow
+or `credential_store` call creates them. Or the directory doesn't exist — workflow
 creates it on startup, but check if something deleted it.
 
 ---
 
 ## Roadmap
 
-**v1.1.1** (current) â€” stable API patterns, credentials, transforms, watches,
+**v1.1.1** (current) — stable API patterns, credentials, transforms, watches,
 workflow chains. Experimental flow recording.
 
 **Follow-up release** (planned):
@@ -842,7 +842,7 @@ workflow chains. Experimental flow recording.
 
 ---
 
-## Quick Reference â€” All 31 Tools
+## Quick Reference — All 31 Tools
 
 | Category | Tool | Description |
 |----------|------|-------------|
@@ -871,7 +871,7 @@ workflow chains. Experimental flow recording.
 | Watches | `watch_delete` | Remove watch |
 | Pipes | `transform_pipe` | JSON transform pipeline |
 | Pipes | `pipe_test` | Test pipeline with intermediates |
-| Workflows | `workflow_define` | Define triggerâ†’action chain |
+| Workflows | `workflow_define` | Define trigger→action chain |
 | Workflows | `workflow_run` | Execute a workflow (returns plan) |
 | Workflows | `workflow_list` | List workflows |
 | Workflows | `workflow_status` | Workflow detail + run history |

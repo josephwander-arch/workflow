@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.4 - 2026-04-16
+
+### Fixed
+- **`skills/workflow.md`** + **`skills/workflow/skill.md`** — repaired 69 UTF-8 mojibake sequences (48 em-dashes, 21 arrows) that were double-encoded. Rendered text unchanged; source bytes now clean.
+
+### Notes
+- No functional changes. Documentation-only patch.
+
 ## v1.3.3 - 2026-04-16
 
 ### Changed
