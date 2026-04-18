@@ -62,59 +62,51 @@ Day N: Direct HTTP replay (workflow:api_call)
 
 **30 tools total** across 6 modules.
 
-## Installation & Per-Machine Setup
+## Install
 
-This is a standalone Rust MCP server for Claude Desktop / Claude Code. Each machine that runs the server needs its own copy of the binary plus a few config tweaks.
+### Windows x64
 
-**Quick install:**
-1. Download the right binary from [Releases](https://github.com/josephwander-arch/workflow/releases) — `_arm64.exe` for Windows ARM64, `_x64.exe` for x64.
-2. Copy to `C:\CPC\servers\workflow.exe`.
-3. Edit `%APPDATA%\Claude\claude_desktop_config.json` — paste the snippet from [`claude_desktop_config.example.json`](./claude_desktop_config.example.json) into your `mcpServers` object.
+1. Download `workflow-v1.3.5-x64.exe` from the [latest release](https://github.com/josephwander-arch/workflow/releases/latest).
+2. Rename to `workflow.exe` and place in `%LOCALAPPDATA%\CPC\servers\`.
+3. Add to your `claude_desktop_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "workflow": {
+         "command": "%LOCALAPPDATA%\\CPC\\servers\\workflow.exe"
+       }
+     }
+   }
+   ```
 4. Restart Claude Desktop.
 
-For full per-machine setup (paths, credential vault setup, DPAPI notes), see [`docs/per_machine_setup.md`](./docs/per_machine_setup.md).
+---
 
-A future `cpc-setup.exe` helper will automate this entire process.
+### Windows ARM64
 
-### Download
+1. Download `workflow-v1.3.5-aarch64.exe` from the [latest release](https://github.com/josephwander-arch/workflow/releases/latest).
+2. Rename to `workflow.exe` and place in `%LOCALAPPDATA%\CPC\servers\`.
+3. Add to your `claude_desktop_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "workflow": {
+         "command": "%LOCALAPPDATA%\\CPC\\servers\\workflow.exe"
+       }
+     }
+   }
+   ```
+4. Restart Claude Desktop.
 
-Grab the binary for your platform from the [latest release](https://github.com/josephwander-arch/workflow/releases/latest):
-
-- **x64 Windows**: `workflow_v1.3.4_windows_x64.exe`
-- **ARM64 Windows**: `workflow_v1.3.4_windows_arm64.exe`
-
-Rename to `workflow.exe` and place wherever you keep your MCP server binaries.
-
-### Claude Desktop Config
-
-Add this to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "workflow": {
-      "command": "C:/path/to/workflow.exe",
-      "args": []
-    }
-  }
-}
-```
-
-See `claude_desktop_config.example.json` for the full snippet with both architecture options.
+---
 
 ### Prerequisites
 
-- **Windows 10/11** — DPAPI credential encryption requires Windows. On other platforms, credentials are stored unencrypted (development/testing only).
+- **Windows 10/11** — credential encryption requires Windows. On other platforms, credentials are stored unencrypted (development/testing only).
 - No Node.js, no Python, no runtime dependencies.
-- **Keyring integration** — credentials are stored in the OS keyring (Windows Credential Manager, macOS Keychain, Linux Secret Service). The `windows-native` Cargo feature flag enables DPAPI-specific paths for Windows deployments.
+- **Keyring integration** — credentials are stored in the OS keyring (Windows Credential Manager, macOS Keychain, Linux Secret Service).
 
-### Verify Installation
-
-Run `doctor.ps1` to check your setup:
-
-```powershell
-.\doctor.ps1
-```
+For full per-machine setup (paths, credential vault setup, DPAPI notes), see [`docs/per_machine_setup.md`](./docs/per_machine_setup.md).
 
 ### Build from Source
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **GitHub Actions release workflow** — `v*` tag push builds x64 (windows-latest) + ARM64 (windows-11-arm native) binaries, attaches to draft release as `workflow-vX.Y.Z-x64.exe` / `workflow-vX.Y.Z-aarch64.exe`.
+- **SECURITY.md** — security policy and reporting instructions.
+- **Platform-split install docs** — README install section split into self-contained Windows x64 and ARM64 sub-sections.
+
 ## v1.3.5 - 2026-04-17
 
 ### Changed
