@@ -1,5 +1,7 @@
 # Workflow MCP Server
 
+[![CI](https://github.com/josephwander-arch/workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwander-arch/workflow/actions/workflows/ci.yml)
+
 API pattern storage and replay, DPAPI-encrypted credential vault, data transform pipelines, watch polling, and workflow chains — all through one MCP server. Single Rust binary, 30 tools, zero runtime dependencies.
 
 **Part of [CPC](https://github.com/josephwander-arch) (Cognitive Performance Computing)** — a multi-agent AI orchestration platform. Related repos: [manager](https://github.com/josephwander-arch/manager) · [local](https://github.com/josephwander-arch/local) · [hands](https://github.com/josephwander-arch/hands) · [cpc-paths](https://github.com/josephwander-arch/cpc-paths) · [cpc-breadcrumbs](https://github.com/josephwander-arch/cpc-breadcrumbs)
@@ -40,7 +42,7 @@ Day N: Direct HTTP replay (workflow:api_call)
 - Browser session: ~3-5 seconds startup + page load + interaction + fragile selectors
 - API call: ~50-200ms, no browser process, no DOM, no breakage from UI redesigns
 
-**Production proof:** 24+ stored API patterns in daily use across Humana, Aetna, and UnitedHealthcare/Optum FHIR endpoints for Medicare insurance brokerage. Real `last_used` timestamps. No browser window ever opens.
+**Production proof:** 24+ stored API patterns in daily use against healthcare payer FHIR endpoints. Once a pattern is stored, future calls run direct-to-HTTP — no browser window opens.
 
 ## Capabilities
 
@@ -205,23 +207,27 @@ Workflow and hands are designed as two halves of the same pipeline.
 
 ## Compatible With
 
-Works with any MCP client. Common install channels:
+`workflow` runs standalone for API pattern replay, credential storage, watches, and transform pipelines. It pairs naturally with the rest of the CPC stack when you want end-to-end automation.
 
-- **Claude Desktop** (the main chat app) — add to `claude_desktop_config.json`. See `claude_desktop_config.example.json` in this repo.
-- **Claude Code** — add to `~/.claude/mcp.json`, or point your `CLAUDE.md` at `skills/workflow.md` to load it as a skill instead.
-- **OpenAI Codex CLI** — register via Codex's MCP config, or load the skill directly.
-- **Gemini CLI** — register via Gemini's MCP config, or load the skill directly.
+- Pair with [hands](https://github.com/josephwander-arch/hands) for browser-side discovery (`browser_learn_api` captures the network traffic that workflow then stores and replays).
+- Pair with [local](https://github.com/josephwander-arch/local) when pipelines need local shell, file, or transform steps between API calls.
+- Pair with [manager](https://github.com/josephwander-arch/manager) to wrap workflow's replay tools in delegated tasks with breadcrumb tracking.
 
-**Two install layouts:**
+Host clients: Claude Desktop (`claude_desktop_config.json`), Claude Code (`~/.claude/mcp.json`), OpenAI Codex CLI, Gemini CLI, or any MCP-compatible host. The skill file at `skills/workflow.md` works standalone too — load it as an Anthropic skill for no-server behavioral guidance (planning, review, discipline reminders).
 
-1. **Local folder** — clone or download this repo, then point your client at the local directory or the extracted `.exe` binary.
-2. **Installed binary** — grab the `.exe` from the [Releases](https://github.com/josephwander-arch/workflow/releases) page, place it wherever you keep your MCP binaries, then register its path in your client's config.
+### First-run tip for Claude clients
 
-**Also ships as a skill** — if your client supports Anthropic skill files, load `skills/workflow.md` directly. Skill-only mode gives you the behavioral guidance without running the server; useful for planning, review, or read-only workflows.
+Turn on **tools always loaded** in Claude's tool settings. Workflow exposes 30 tools across 6 modules — API patterns, credentials, transforms, watches, workflows, flows — and first-run discovery can miss subsets if lazy-loading is on. Always-loaded makes the full surface visible immediately.
 
-### First-run tip: enable "always-loaded tools"
+## Failure modes
 
-For the smoothest experience, enable **tools always loaded** in your Claude client settings (Claude Desktop: Settings → Tools, or equivalent in Claude Code / Codex / Gemini). This ensures Claude recognizes the tool surface on first use without needing to re-discover it every session. Most users hit friction on day one because this is off by default.
+Most workflow failures happen when a stored pattern drifts from the live service. The tools try to detect this and point you back to the right recovery path:
+
+- **Stored API pattern expired (401/403)** — `api_call` response includes a `fallback_hint` pointing back to hands for re-discovery. Re-auth in the browser, `credential_store` the new token, and the same pattern works again.
+- **Endpoint moved or schema changed** — `api_call` returns a non-auth error (404, 400, unexpected shape). The pattern itself is stale; re-run `browser_learn_api` on the updated flow and overwrite with `api_store`.
+- **Keyring unavailable (Linux headless)** — `credential_store` refuses to store unencrypted secrets on Linux without Secret Service. Install a keyring backend or mark the environment dev-only.
+- **Transform pipeline silently drops fields** — usually a `pick` stage with a wrong key. Use `pipe_test` to run the pipeline against a sample payload and inspect each stage's output.
+- **Workflow chain stuck** — `workflow_run` returns an execution plan, not results. If a step never executes, confirm the host session is actually dispatching the plan's tool calls.
 
 ## License
 
@@ -235,9 +241,3 @@ Issues welcome; PRs considered but this is primarily maintained as part of the C
 
 Joseph Wander — protipsinc@gmail.com
 GitHub: [github.com/josephwander-arch](https://github.com/josephwander-arch/)
-
-## Donations
-
-If this project saves you time, consider supporting development:
-
-**$NeverRemember** (Cash App)
