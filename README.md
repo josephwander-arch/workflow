@@ -6,8 +6,9 @@ API pattern storage and replay, DPAPI-encrypted credential vault, data transform
 
 **Workflow is the graduation pipeline partner for [hands](https://github.com/josephwander-arch/hands).** Use hands to automate a browser task once, capture the underlying API calls with `hands:browser_learn_api`, store them with `workflow:api_store`, then replay via direct HTTP forever. No browser needed on future runs. 100x faster.
 
-## What's New — v1.3.4
+## What's New — v1.3.5
 
+- **v1.3.5** — Clippy + dead_code cleanup: removed 2 crate-level allows, added targeted item-level allows with justification.
 - **v1.3.4** — Fixed 69 UTF-8 mojibake sequences in skill reference files (em-dashes + arrows). Documentation-only patch.
 - **v1.3.3** — Cargo.toml metadata cleanup (license, repository, description fields).
 - **v1.3.1** — Two-Entry sentinel keyring probe on startup. Detects mock backends that don't persist across instances.
