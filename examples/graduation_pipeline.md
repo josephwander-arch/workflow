@@ -113,7 +113,7 @@ workflow:credential_store(
   name: "payer_bearer_token",
   value: "<new_token>",
   credential_type: "bearer",
-  service: "humana"
+  service: "acme_health"
 )
 
 workflow:api_test(name: "payer_fhir_patient_search", params: {"name": "test"})

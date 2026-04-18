@@ -64,10 +64,10 @@ API.
 
 ### Production proof
 
-This isn't theoretical. Workflow has been used in production for Medicare
-insurance broker work — 24 stored API patterns across Humana, Aetna, and
-UnitedHealthcare/Optum FHIR endpoints, with real `last_used` timestamps. These
-patterns run daily without a browser window ever opening.
+This isn't theoretical. Workflow has been used in production for healthcare
+integration work — 24 stored API patterns across healthcare payer FHIR
+endpoints, with real `last_used` timestamps. These patterns run daily without
+a browser window ever opening.
 
 ---
 
@@ -87,7 +87,7 @@ Save a discovered API pattern for later replay.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `name` | string | yes | Human-readable name, e.g. `humana_member_search` |
+| `name` | string | yes | Human-readable name, e.g. `payer_member_search` |
 | `url_pattern` | string | yes | URL with `{placeholders}`, e.g. `https://api.example.com/fhir/Patient/{id}` |
 | `method` | string | yes | HTTP method: GET, POST, PUT, DELETE, PATCH |
 | `headers` | object | no | Request headers (content-type, custom headers). Auth goes through `credential_ref`. |
@@ -102,10 +102,10 @@ Save a discovered API pattern for later replay.
 **Key pattern — credential by reference:**
 ```
 workflow:api_store(
-  name: "humana_fhir_patient",
-  url_pattern: "https://fhir.humana.com/api/Patient/{patient_id}",
+  name: "acme_fhir_patient",
+  url_pattern: "https://fhir.example-health.com/api/Patient/{patient_id}",
   method: "GET",
-  credential_ref: "humana_bearer_token",
+  credential_ref: "payer_bearer_token",
   notes: "Discovered via browser_learn_api on 2026-03-15"
 )
 ```
@@ -155,7 +155,7 @@ List all stored API patterns.
 
 Returns: array of `{name, method, url_pattern, credential_ref, last_used, created_at}` plus `count`.
 
-Use `filter: "humana"` to see only Humana patterns, or `filter: "FHIR"` to see all
+Use `filter: "acme"` to see only a specific payer's patterns, or `filter: "FHIR"` to see all
 FHIR endpoints regardless of payer.
 
 #### `api_test`
@@ -204,10 +204,10 @@ Save a credential securely.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `name` | string | yes | Reference name, e.g. `humana_bearer_token` |
+| `name` | string | yes | Reference name, e.g. `payer_bearer_token` |
 | `value` | string | yes | The secret value (token, password, API key) |
 | `credential_type` | string | no | One of: `bearer`, `api_key`, `basic`, `cookie`, `custom`. Defaults to `bearer`. Determines how the credential is injected into HTTP requests. |
-| `service` | string | no | Service name for organization (e.g. `humana`, `github`) |
+| `service` | string | no | Service name for organization (e.g. `acme_health`, `github`) |
 | `notes` | string | no | Description, expiry info, how to refresh |
 
 **Behavior:** Encrypts `value` via DPAPI before writing to disk. The plaintext
@@ -277,9 +277,9 @@ hands, re-authenticate, capture the new tokens, and store them again.
 
 **Pattern for FHIR endpoints:**
 ```
-workflow:credential_store(name: "humana_refresh", value: "<refresh_token>", credential_type: "bearer", service: "humana")
-workflow:credential_refresh(name: "humana_refresh", token_url: "https://auth.humana.com/oauth2/token", client_id: "<client_id>")
-workflow:api_test(name: "humana_fhir_patient", params: {"patient_id": "test"})
+workflow:credential_store(name: "payer_refresh", value: "<refresh_token>", credential_type: "bearer", service: "acme_health")
+workflow:credential_refresh(name: "payer_refresh", token_url: "https://auth.example-health.com/oauth2/token", client_id: "<client_id>")
+workflow:api_test(name: "acme_fhir_patient", params: {"patient_id": "test"})
 ```
 
 ---
@@ -633,37 +633,37 @@ pre-generated report file — it doesn't run the linter itself.
 ```
 # Step 1: Use hands to do the task via browser and capture network traffic
 hands:browser_launch()
-hands:browser_navigate(url: "https://portal.humana.com")
+hands:browser_navigate(url: "https://portal.example-health.com")
 # ... interact with the page ...
 hands:browser_learn_api()  → extracts endpoint patterns
 
 # Step 2: Store the discovered pattern
-workflow:credential_store(name: "humana_token", value: "<captured_token>", credential_type: "bearer", service: "humana")
-workflow:api_store(name: "humana_member_search", url_pattern: "https://api.humana.com/fhir/Patient?name={name}", method: "GET", credential_ref: "humana_token")
+workflow:credential_store(name: "payer_token", value: "<captured_token>", credential_type: "bearer", service: "acme_health")
+workflow:api_store(name: "payer_member_search", url_pattern: "https://api.example-health.com/fhir/Patient?name={name}", method: "GET", credential_ref: "payer_token")
 
 # Step 3: Test it works
-workflow:api_test(name: "humana_member_search", params: {"name": "Smith"})
+workflow:api_test(name: "payer_member_search", params: {"name": "Smith"})
 
 # Step 4: From now on, skip the browser
-workflow:api_call(name: "humana_member_search", params: {"name": "Jones"})
+workflow:api_call(name: "payer_member_search", params: {"name": "Jones"})
 ```
 
 ### Pattern 2: Token rotation without touching patterns
 
 ```
 # New token obtained (via browser re-auth or credential_refresh)
-workflow:credential_store(name: "humana_token", value: "<new_token>", credential_type: "bearer", service: "humana")
+workflow:credential_store(name: "payer_token", value: "<new_token>", credential_type: "bearer", service: "acme_health")
 
-# All patterns referencing "humana_token" automatically use the new value
+# All patterns referencing "payer_token" automatically use the new value
 # No need to update any api_store entries
-workflow:api_test(name: "humana_member_search", params: {"name": "test"})
+workflow:api_test(name: "payer_member_search", params: {"name": "test"})
 ```
 
 ### Pattern 3: Transform API response data
 
 ```
 # Call an API that returns FHIR bundle
-result = workflow:api_call(name: "humana_fhir_search", params: {"name": "Smith"})
+result = workflow:api_call(name: "payer_fhir_search", params: {"name": "Smith"})
 
 # Transform the response to extract just what you need
 workflow:transform_pipe(
