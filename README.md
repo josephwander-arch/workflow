@@ -128,7 +128,7 @@ This is the core use case. You've been using hands to automate a browser task. N
 
 ```
 hands:browser_launch()
-hands:browser_navigate(url: "https://portal.humana.com")
+hands:browser_navigate(url: "https://portal.example-health.com")
 # ... interact with the page ...
 hands:browser_learn_api()  → extracts endpoint patterns
 ```
@@ -137,17 +137,17 @@ hands:browser_learn_api()  → extracts endpoint patterns
 
 ```
 workflow:credential_store(
-  name: "humana_token",
+  name: "payer_token",
   value: "<captured_bearer_token>",
   credential_type: "bearer",
-  service: "humana"
+  service: "example_health"
 )
 
 workflow:api_store(
-  name: "humana_member_search",
-  url_pattern: "https://api.humana.com/fhir/Patient?name={name}",
+  name: "payer_member_search",
+  url_pattern: "https://api.example-health.com/fhir/Patient?name={name}",
   method: "GET",
-  credential_ref: "humana_token",
+  credential_ref: "payer_token",
   notes: "Discovered via browser_learn_api 2026-03-15"
 )
 ```
@@ -155,13 +155,13 @@ workflow:api_store(
 ### Step 3: Test it
 
 ```
-workflow:api_test(name: "humana_member_search", params: {"name": "Smith"})
+workflow:api_test(name: "payer_member_search", params: {"name": "Smith"})
 ```
 
 ### Step 4: Use it forever — no browser
 
 ```
-workflow:api_call(name: "humana_member_search", params: {"name": "Jones"})
+workflow:api_call(name: "payer_member_search", params: {"name": "Jones"})
 ```
 
 When the API breaks (token expired, endpoint changed), the response includes a `fallback_hint` telling you to go back to the browser. Re-discover, re-graduate.
@@ -239,5 +239,5 @@ Issues welcome; PRs considered but this is primarily maintained as part of the C
 
 ## Contact
 
-Joseph Wander — protipsinc@gmail.com
+Joseph Wander — josephwander@gmail.com
 GitHub: [github.com/josephwander-arch](https://github.com/josephwander-arch/)

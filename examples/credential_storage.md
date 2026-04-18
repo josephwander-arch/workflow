@@ -91,17 +91,17 @@ For OAuth endpoints that support refresh tokens:
 ```
 # First time — provide token URL and client ID (stored for future refreshes)
 workflow:credential_refresh(
-  name: "humana_refresh",
-  token_url: "https://auth.humana.com/oauth2/token",
+  name: "payer_refresh",
+  token_url: "https://auth.example-health.com/oauth2/token",
   client_id: "your_client_id"
 )
 
 # Subsequent refreshes — just the name
-workflow:credential_refresh(name: "humana_refresh")
+workflow:credential_refresh(name: "payer_refresh")
 → {refreshed: true, new_expiry_seconds: 3600}
 
 # Always test after refresh
-workflow:api_test(name: "humana_fhir_patient_search", params: {"name": "test"})
+workflow:api_test(name: "payer_fhir_patient_search", params: {"name": "test"})
 ```
 
 ## Security Notes

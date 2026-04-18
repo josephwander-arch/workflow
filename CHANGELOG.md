@@ -98,7 +98,7 @@ Initial public release. 31 tools across 7 modules.
 
 ### PRODUCTION (stable, battle-tested)
 
-- **API Pattern Storage & Replay** — `api_store`, `api_call`, `api_list`, `api_test`, `api_delete`. Store discovered API patterns with URL templates, credential references, and placeholder substitution. Replay via direct HTTP. 24+ patterns in daily production use across Humana, Aetna, and UnitedHealthcare/Optum FHIR endpoints.
+- **API Pattern Storage & Replay** — `api_store`, `api_call`, `api_list`, `api_test`, `api_delete`. Store discovered API patterns with URL templates, credential references, and placeholder substitution. Replay via direct HTTP. 24+ patterns in daily production use across healthcare payer FHIR endpoints.
 - **Credential Vault** — `credential_store`, `credential_get`, `credential_list`, `credential_delete`, `credential_refresh`. Windows DPAPI-encrypted credential storage. Credentials referenced by name from API patterns — rotate once, all patterns follow. OAuth refresh_token flow with automatic token endpoint storage.
 - **Data Transform Pipelines** — `transform_pipe`, `pipe_test`. JSON transform chains: pick, rename, flatten, filter, template, group_by, math. Sequential operation chaining with intermediate result inspection.
 - **Watch / Polling** — `watch_define`, `watch_list`, `watch_check`, `watch_schedule`, `watch_delete`. Define polling conditions with check tools, condition expressions, active hours, and action flow triggers.

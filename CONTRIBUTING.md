@@ -41,7 +41,7 @@ cargo build --release --target aarch64-pc-windows-msvc
 
 ## Reporting Issues
 
-Open an issue at [github.com/josephwander-arch/workflow](https://github.com/josephwander-arch/workflow/issues) or email protipsinc@gmail.com.
+Open an issue at [github.com/josephwander-arch/workflow](https://github.com/josephwander-arch/workflow/issues) or email josephwander@gmail.com.
 
 ## License
 

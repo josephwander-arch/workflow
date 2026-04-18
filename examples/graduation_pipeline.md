@@ -4,7 +4,7 @@ The graduation pipeline is workflow's core use case. You automate a task via bro
 
 ## Scenario
 
-You need to look up Medicare beneficiary data on Humana's FHIR portal. Currently you do this through the browser every time.
+You need to look up patient data against an example healthcare payer's FHIR endpoint. Currently you do this through the browser every time.
 
 ## Step 1: Browser Discovery (hands MCP server)
 
@@ -12,11 +12,11 @@ Launch a browser session and perform the task manually while hands captures netw
 
 ```
 hands:browser_launch()
-hands:browser_navigate(url: "https://portal.humana.com/login")
-hands:browser_type(a11y_ref: "username_field", text: "broker@example.com")
+hands:browser_navigate(url: "https://portal.example-health.com/login")
+hands:browser_type(a11y_ref: "username_field", text: "user@example.com")
 hands:browser_type(a11y_ref: "password_field", text: "***")
 hands:browser_click(a11y_ref: "login_button")
-hands:browser_navigate(url: "https://portal.humana.com/fhir/Patient?name=Smith")
+hands:browser_navigate(url: "https://portal.example-health.com/fhir/Patient?name=Smith")
 ```
 
 Now extract the API pattern from the recorded network traffic:
@@ -33,11 +33,11 @@ Take the bearer token captured from the browser session and store it in the encr
 
 ```
 workflow:credential_store(
-  name: "humana_bearer_token",
+  name: "payer_bearer_token",
   value: "eyJhbGciOiJSUzI1NiIs...",
   credential_type: "bearer",
-  service: "humana",
-  notes: "Captured from portal.humana.com login, expires ~1hr"
+  service: "acme_health",
+  notes: "Captured from portal.example-health.com login, expires ~1hr"
 )
 ```
 
@@ -49,10 +49,10 @@ Store the discovered endpoint pattern with a credential reference (not the token
 
 ```
 workflow:api_store(
-  name: "humana_fhir_patient_search",
-  url_pattern: "https://api.humana.com/fhir/Patient?name={name}",
+  name: "payer_fhir_patient_search",
+  url_pattern: "https://api.example-health.com/fhir/Patient?name={name}",
   method: "GET",
-  credential_ref: "humana_bearer_token",
+  credential_ref: "payer_bearer_token",
   response_shape: ["entry", "total", "link"],
   notes: "Discovered via browser_learn_api on 2026-03-15. FHIR Bundle response."
 )
@@ -62,7 +62,7 @@ workflow:api_store(
 
 ```
 workflow:api_test(
-  name: "humana_fhir_patient_search",
+  name: "payer_fhir_patient_search",
   params: {"name": "Smith"}
 )
 → {works: true, status: 200, response_time_ms: 142}
@@ -74,7 +74,7 @@ From now on, every lookup is a direct HTTP call:
 
 ```
 workflow:api_call(
-  name: "humana_fhir_patient_search",
+  name: "payer_fhir_patient_search",
   params: {"name": "Jones"}
 )
 → {success: true, status: 200, response_time_ms: 87, body: {entry: [...], total: 3}}
@@ -101,22 +101,22 @@ workflow:transform_pipe(
 If the token expires or the endpoint changes, `api_call` returns a `fallback_hint`:
 
 ```
-{success: false, status: 401, fallback_hint: "Token may be expired. Re-authenticate via browser and update credential 'humana_bearer_token'."}
+{success: false, status: 401, fallback_hint: "Token may be expired. Re-authenticate via browser and update credential 'payer_bearer_token'."}
 ```
 
-Go back to hands, re-authenticate, capture new token, `credential_store` it again. All patterns referencing `humana_bearer_token` automatically use the new value. No pattern updates needed.
+Go back to hands, re-authenticate, capture new token, `credential_store` it again. All patterns referencing `payer_bearer_token` automatically use the new value. No pattern updates needed.
 
 ## Token Rotation (No Pattern Updates)
 
 ```
 workflow:credential_store(
-  name: "humana_bearer_token",
+  name: "payer_bearer_token",
   value: "<new_token>",
   credential_type: "bearer",
   service: "humana"
 )
 
-workflow:api_test(name: "humana_fhir_patient_search", params: {"name": "test"})
+workflow:api_test(name: "payer_fhir_patient_search", params: {"name": "test"})
 → {works: true, status: 200}
 ```
 
